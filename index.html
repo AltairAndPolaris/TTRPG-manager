@@ -347,6 +347,7 @@
                     Papa.parse(csvText, {
                         header: false,
                         skipEmptyLines: true,
+                        delimiter: ';',
                         complete: function(results) {
                             classes = {};
                             results.data.forEach(row => {
@@ -555,6 +556,7 @@
         }
 
         initCharacters();
+        loadCSV();
     </script>
 </body>
 </html>
