@@ -107,6 +107,74 @@
             background: #45a049;
         }
 
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        .export-btn, .import-btn {
+            background: #FF9800;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1em;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .export-btn:hover, .import-btn:hover {
+            background: #F57C00;
+        }
+
+        .export-modal {
+            display: none;
+            position: fixed;
+            z-index: 1001;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+        }
+
+        .export-modal-content {
+            background: white;
+            margin: 100px auto;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 700px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .export-textarea {
+            width: 100%;
+            height: 300px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 0.9em;
+            margin: 15px 0;
+            resize: vertical;
+        }
+
+        .copy-btn {
+            background: #2196F3;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+
+        .copy-btn:hover {
+            background: #0b7dda;
+        }
+
         .modal {
             display: none;
             position: fixed;
@@ -285,7 +353,11 @@
 
         <div class="characters-grid" id="charactersGrid"></div>
         
-        <button class="add-character-btn" onclick="addNewCharacter()">+ Add Character</button>
+        <div class="button-group">
+            <button class="add-character-btn" onclick="addNewCharacter()">+ Add Character</button>
+            <button class="export-btn" onclick="openExportModal()">📤 Export All</button>
+            <button class="import-btn" onclick="openImportModal()">📥 Import</button>
+        </div>
     </div>
 
     <div id="characterModal" class="modal">
@@ -325,6 +397,32 @@
 
             <button class="save-btn" onclick="closeModal()">Close</button>
             <button class="delete-btn" onclick="deleteCharacter()">Delete Character</button>
+        </div>
+    </div>
+
+    <div id="exportModal" class="export-modal">
+        <div class="export-modal-content">
+            <div class="modal-header">
+                <h2>Export Characters</h2>
+                <span class="close" onclick="closeExportModal()">&times;</span>
+            </div>
+            <p>Copy this text and save it to a document. You can import it later to restore your characters.</p>
+            <textarea class="export-textarea" id="exportText" readonly></textarea>
+            <button class="copy-btn" onclick="copyExportText()">Copy to Clipboard</button>
+            <button class="save-btn" onclick="closeExportModal()">Close</button>
+        </div>
+    </div>
+
+    <div id="importModal" class="export-modal">
+        <div class="export-modal-content">
+            <div class="modal-header">
+                <h2>Import Characters</h2>
+                <span class="close" onclick="closeImportModal()">&times;</span>
+            </div>
+            <p>Paste your saved character data below and click Import.</p>
+            <textarea class="export-textarea" id="importText" placeholder="Paste your character data here..."></textarea>
+            <button class="copy-btn" onclick="importCharacters()">Import</button>
+            <button class="save-btn" onclick="closeImportModal()">Close</button>
         </div>
     </div>
 
@@ -546,6 +644,58 @@
 
         function saveCharacters() {
             localStorage.setItem('ttrpg_characters', JSON.stringify(characters));
+        }
+
+        function openExportModal() {
+            const exportData = btoa(encodeURIComponent(JSON.stringify(characters)));
+            document.getElementById('exportText').value = exportData;
+            document.getElementById('exportModal').style.display = 'block';
+        }
+
+        function closeExportModal() {
+            document.getElementById('exportModal').style.display = 'none';
+        }
+
+        function copyExportText() {
+            const textarea = document.getElementById('exportText');
+            textarea.select();
+            document.execCommand('copy');
+            alert('Copied to clipboard!');
+        }
+
+        function openImportModal() {
+            document.getElementById('importText').value = '';
+            document.getElementById('importModal').style.display = 'block';
+        }
+
+        function closeImportModal() {
+            document.getElementById('importModal').style.display = 'none';
+        }
+
+        function importCharacters() {
+            const importText = document.getElementById('importText').value.trim();
+            if (!importText) {
+                alert('Please paste character data first!');
+                return;
+            }
+
+            try {
+                const decodedData = JSON.parse(decodeURIComponent(atob(importText)));
+                
+                if (!Array.isArray(decodedData)) {
+                    throw new Error('Invalid data format');
+                }
+
+                if (confirm(`This will replace your current ${characters.length} character(s) with ${decodedData.length} imported character(s). Continue?`)) {
+                    characters = decodedData;
+                    renderCharacters();
+                    closeImportModal();
+                    alert('Characters imported successfully!');
+                }
+            } catch (error) {
+                alert('Error importing characters. Please check the data and try again.');
+                console.error('Import error:', error);
+            }
         }
 
         window.onclick = function(event) {
