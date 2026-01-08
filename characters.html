@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Characters</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .file-upload {
+            text-align: center;
+            margin-bottom: 20px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 500px;
+            margin: 0 auto 30px;
+        }
+
+        .file-upload label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #1e3c72;
+        }
+
+        .file-upload input[type="file"] {
+            display: block;
+            margin: 0 auto;
+        }
+
+        .file-status {
+            margin-top: 10px;
+            color: #4CAF50;
+            font-size: 0.9em;
+        }
+
+        .characters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .character-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .character-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 12px rgba(0,0,0,0.2);
+        }
+
+        .character-card h3 {
+            color: #1e3c72;
+            margin-bottom: 5px;
+            font-size: 1.2em;
+        }
+
+        .character-card p {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .add-character-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1em;
+            border-radius: 8px;
+            cursor: pointer;
+            display: block;
+            margin: 0 auto;
+            transition: background 0.3s;
+        }
+
+        .add-character-btn:hover {
+            background: #45a049;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        .export-btn, .import-btn {
+            background: #FF9800;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1em;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .export-btn:hover, .import-btn:hover {
+            background: #F57C00;
+        }
+
+        .export-modal {
+            display: none;
+            position: fixed;
+            z-index: 1001;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+        }
+
+        .export-modal-content {
+            background: white;
+            margin: 100px auto;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 700px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .export-textarea {
+            width: 100%;
+            height: 300px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 0.9em;
+            margin: 15px 0;
+            resize: vertical;
+        }
+
+        .copy-btn {
+            background: #2196F3;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+
+        .copy-btn:hover {
+            background: #0b7dda;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            overflow-y: auto;
+        }
+
+        .modal-content {
+            background: white;
+            margin: 50px auto;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 600px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h2 {
+            color: #1e3c72;
+        }
+
+        .close {
+            font-size: 28px;
+            font-weight: bold;
+            color: #aaa;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .close:hover {
+            color: #000;
+        }
+
+        .info-section {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .info-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .info-field {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .info-field label {
+            font-weight: bold;
+            color: #555;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+        }
+
+        .info-field input, .info-field select {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+
+        .hit-die-display {
+            margin-top: 5px;
+            font-size: 0.85em;
+            color: #666;
+        }
+
+        .stat-row {
+            margin-bottom: 15px;
+        }
+
+        .stat-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .stat-controls {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+        }
+
+        .stat-input {
+            width: 50px;
+            padding: 3px 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        .stat-max {
+            width: 50px;
+            padding: 3px 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50 0%, #8BC34A 100%);
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        .delete-btn {
+            background: #f44336;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .delete-btn:hover {
+            background: #da190b;
+        }
+
+        .save-btn {
+            background: #2196F3;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+            margin-right: 10px;
+        }
+
+        .save-btn:hover {
+            background: #0b7dda;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>TTRPG Character Manager</h1>
+        
+        <div class="file-upload">
+            <div class="file-status" id="fileStatus">Loading classes...</div>
+        </div>
+
+        <div class="characters-grid" id="charactersGrid"></div>
+        
+        <div class="button-group">
+            <button class="add-character-btn" onclick="addNewCharacter()">+ Add Character</button>
+            <button class="export-btn" onclick="openExportModal()">📤 Export All</button>
+            <button class="import-btn" onclick="openImportModal()">📥 Import</button>
+        </div>
+    </div>
+
+    <div id="characterModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Character Details</h2>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            
+            <div class="info-section">
+                <div class="info-row">
+                    <div class="info-field">
+                        <label>Character Name:</label>
+                        <input type="text" id="charName" onchange="updateCharacter()">
+                    </div>
+                    <div class="info-field">
+                        <label>Real Name:</label>
+                        <input type="text" id="realName" onchange="updateCharacter()">
+                    </div>
+                </div>
+                <div class="info-row">
+                    <div class="info-field">
+                        <label>Species:</label>
+                        <input type="text" id="species" onchange="updateCharacter()">
+                    </div>
+                    <div class="info-field">
+                        <label>Class:</label>
+                        <select id="class" onchange="updateCharacter()">
+                            <option value="">Select a class...</option>
+                        </select>
+                        <div class="hit-die-display" id="hitDieDisplay"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="statsContainer"></div>
+
+            <button class="save-btn" onclick="closeModal()">Close</button>
+            <button class="delete-btn" onclick="deleteCharacter()">Delete Character</button>
+        </div>
+    </div>
+
+    <div id="exportModal" class="export-modal">
+        <div class="export-modal-content">
+            <div class="modal-header">
+                <h2>Export Characters</h2>
+                <span class="close" onclick="closeExportModal()">&times;</span>
+            </div>
+            <p>Copy this text and save it to a document. You can import it later to restore your characters.</p>
+            <textarea class="export-textarea" id="exportText" readonly></textarea>
+            <button class="copy-btn" onclick="copyExportText()">Copy to Clipboard</button>
+            <button class="save-btn" onclick="closeExportModal()">Close</button>
+        </div>
+    </div>
+
+    <div id="importModal" class="export-modal">
+        <div class="export-modal-content">
+            <div class="modal-header">
+                <h2>Import Characters</h2>
+                <span class="close" onclick="closeImportModal()">&times;</span>
+            </div>
+            <p>Paste your saved character data below and click Import.</p>
+            <textarea class="export-textarea" id="importText" placeholder="Paste your character data here..."></textarea>
+            <button class="copy-btn" onclick="importCharacters()">Import</button>
+            <button class="save-btn" onclick="closeImportModal()">Close</button>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <script>
+        const stats = ['STR', 'DEF', 'DEX', 'WIS', 'INT', 'HP', 'AP', 'AC'];
+        let characters = [];
+        let currentCharIndex = -1;
+        let classes = {};
+
+        function loadCSV() {
+            fetch('Classes.csv')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Classes.csv not found');
+                    }
+                    return response.text();
+                })
+                .then(csvText => {
+                    Papa.parse(csvText, {
+                        header: false,
+                        skipEmptyLines: true,
+                        delimiter: ';',
+                        complete: function(results) {
+                            classes = {};
+                            results.data.forEach(row => {
+                                if (row.length >= 2 && row[0] && row[1]) {
+                                    const className = row[0].trim();
+                                    const hitDie = row[1].trim();
+                                    classes[className] = hitDie;
+                                }
+                            });
+                            
+                            updateClassDropdown();
+                            document.getElementById('fileStatus').textContent = 
+                                `✓ Loaded ${Object.keys(classes).length} classes`;
+                        }
+                    });
+                })
+                .catch(error => {
+                    document.getElementById('fileStatus').textContent = 
+                        `✗ Error: ${error.message}`;
+                    document.getElementById('fileStatus').style.color = '#f44336';
+                    console.error('Error loading Classes.csv:', error);
+                });
+        }
+
+        function updateClassDropdown() {
+            const classSelect = document.getElementById('class');
+            classSelect.innerHTML = '<option value="">Select a class...</option>';
+            
+            Object.keys(classes).sort().forEach(className => {
+                const option = document.createElement('option');
+                option.value = className;
+                option.textContent = className;
+                classSelect.appendChild(option);
+            });
+        }
+
+        function updateHitDieDisplay() {
+            const classSelect = document.getElementById('class');
+            const hitDieDisplay = document.getElementById('hitDieDisplay');
+            const selectedClass = classSelect.value;
+            
+            if (selectedClass && classes[selectedClass]) {
+                hitDieDisplay.textContent = `Hit Die: d${classes[selectedClass]}`;
+            } else {
+                hitDieDisplay.textContent = '';
+            }
+        }
+
+        function initCharacters() {
+            loadCharactersFromFile();
+        }
+
+        function loadCharactersFromFile() {
+            fetch('characters.json')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('characters.json not found');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    characters = data;
+                    renderCharacters();
+                })
+                .catch(error => {
+                    console.log('No saved characters file found, starting fresh');
+                    characters = [{
+                        charName: 'Aragorn',
+                        realName: 'Player 1',
+                        species: 'Human',
+                        class: 'Ranger',
+                        stats: {
+                            STR: {current: 18, max: 20},
+                            DEF: {current: 15, max: 20},
+                            DEX: {current: 16, max: 20},
+                            WIS: {current: 14, max: 20},
+                            INT: {current: 12, max: 20},
+                            HP: {current: 85, max: 100},
+                            AP: {current: 10, max: 15},
+                            AC: {current: 16, max: 20}
+                        }
+                    }];
+                    renderCharacters();
+                });
+        }
+
+        function renderCharacters() {
+            const grid = document.getElementById('charactersGrid');
+            grid.innerHTML = '';
+            
+            characters.forEach((char, index) => {
+                const card = document.createElement('div');
+                card.className = 'character-card';
+                card.onclick = () => openCharacter(index);
+                card.innerHTML = `
+                    <h3>${char.charName}</h3>
+                    <p>${char.realName}</p>
+                `;
+                grid.appendChild(card);
+            });
+            
+            saveCharacters();
+        }
+
+        function openCharacter(index) {
+            currentCharIndex = index;
+            const char = characters[index];
+            
+            document.getElementById('charName').value = char.charName;
+            document.getElementById('realName').value = char.realName;
+            document.getElementById('species').value = char.species;
+            document.getElementById('class').value = char.class;
+            updateHitDieDisplay();
+            
+            const statsContainer = document.getElementById('statsContainer');
+            statsContainer.innerHTML = '';
+            
+            stats.forEach(stat => {
+                const statData = char.stats[stat];
+                const percentage = (statData.current / statData.max) * 100;
+                
+                const statDiv = document.createElement('div');
+                statDiv.className = 'stat-row';
+                statDiv.innerHTML = `
+                    <div class="stat-label">
+                        <span>${stat}</span>
+                        <div class="stat-controls">
+                            <input type="number" class="stat-input" value="${statData.current}" 
+                                   onchange="updateStat('${stat}', 'current', this.value)" min="0">
+                            <span>/</span>
+                            <input type="number" class="stat-max" value="${statData.max}" 
+                                   onchange="updateStat('${stat}', 'max', this.value)" min="1">
+                        </div>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${percentage}%">
+                            ${Math.round(percentage)}%
+                        </div>
+                    </div>
+                `;
+                statsContainer.appendChild(statDiv);
+            });
+            
+            document.getElementById('characterModal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('characterModal').style.display = 'none';
+        }
+
+        function updateCharacter() {
+            if (currentCharIndex < 0) return;
+            
+            characters[currentCharIndex].charName = document.getElementById('charName').value;
+            characters[currentCharIndex].realName = document.getElementById('realName').value;
+            characters[currentCharIndex].species = document.getElementById('species').value;
+            characters[currentCharIndex].class = document.getElementById('class').value;
+            
+            updateHitDieDisplay();
+            renderCharacters();
+        }
+
+        function updateStat(stat, type, value) {
+            if (currentCharIndex < 0) return;
+            
+            const numValue = parseInt(value) || 0;
+            characters[currentCharIndex].stats[stat][type] = numValue;
+            
+            if (type === 'current' && numValue > characters[currentCharIndex].stats[stat].max) {
+                characters[currentCharIndex].stats[stat].current = characters[currentCharIndex].stats[stat].max;
+            }
+            
+            saveCharacters();
+            openCharacter(currentCharIndex);
+        }
+
+        function addNewCharacter() {
+            if (characters.length >= 10) {
+                alert('Maximum of 10 characters reached!');
+                return;
+            }
+            
+            const newChar = {
+                charName: 'New Character',
+                realName: 'Player Name',
+                species: 'Human',
+                class: '',
+                stats: {}
+            };
+            
+            stats.forEach(stat => {
+                newChar.stats[stat] = {current: 10, max: 20};
+            });
+            
+            characters.push(newChar);
+            renderCharacters();
+            openCharacter(characters.length - 1);
+        }
+
+        function deleteCharacter() {
+            if (currentCharIndex < 0) return;
+            
+            if (confirm('Are you sure you want to delete this character?')) {
+                characters.splice(currentCharIndex, 1);
+                closeModal();
+                renderCharacters();
+            }
+        }
+
+        function saveCharacters() {
+            // Create a download link for the JSON file
+            const dataStr = JSON.stringify(characters, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'characters.json';
+            link.click();
+            
+            URL.revokeObjectURL(url);
+        }
+
+        function autoSaveNotification() {
+            alert('Changes saved! Click OK to download the updated characters.json file. Place it in the same folder as this HTML file.');
+        }
+
+        function openExportModal() {
+            const exportData = btoa(encodeURIComponent(JSON.stringify(characters)));
+            document.getElementById('exportText').value = exportData;
+            document.getElementById('exportModal').style.display = 'block';
+        }
+
+        function closeExportModal() {
+            document.getElementById('exportModal').style.display = 'none';
+        }
+
+        function copyExportText() {
+            const textarea = document.getElementById('exportText');
+            textarea.select();
+            document.execCommand('copy');
+            alert('Copied to clipboard!');
+        }
+
+        function openImportModal() {
+            document.getElementById('importText').value = '';
+            document.getElementById('importModal').style.display = 'block';
+        }
+
+        function closeImportModal() {
+            document.getElementById('importModal').style.display = 'none';
+        }
+
+        function importCharacters() {
+            const importText = document.getElementById('importText').value.trim();
+            if (!importText) {
+                alert('Please paste character data first!');
+                return;
+            }
+
+            try {
+                const decodedData = JSON.parse(decodeURIComponent(atob(importText)));
+                
+                if (!Array.isArray(decodedData)) {
+                    throw new Error('Invalid data format');
+                }
+
+                if (confirm(`This will replace your current ${characters.length} character(s) with ${decodedData.length} imported character(s). Continue?`)) {
+                    characters = decodedData;
+                    renderCharacters();
+                    closeImportModal();
+                    alert('Characters imported successfully!');
+                }
+            } catch (error) {
+                alert('Error importing characters. Please check the data and try again.');
+                console.error('Import error:', error);
+            }
+        }
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('characterModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+
+        initCharacters();
+        loadCSV();
+    </script>
+</body>
+</html>
