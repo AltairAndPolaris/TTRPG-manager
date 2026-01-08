@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TTRPG - Système d'Armes</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .input-section {
+            padding: 30px;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #555;
+        }
+
+        .input-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 14px;
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .input-group textarea:focus, .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .selection-section {
+            padding: 30px;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 30px;
+        }
+
+        .select-group {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        .select-group h3 {
+            margin-bottom: 15px;
+            color: #667eea;
+        }
+
+        .select-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .weapon-details, .attack-details {
+            margin-top: 15px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .weapon-details p, .attack-details p {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+
+        .results-section {
+            padding: 30px;
+            background: #f0f4f8;
+        }
+
+        .results-section h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .compatibility-box {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .compatibility-status {
+            text-align: center;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+            font-weight: bold;
+        }
+
+        .perfect {
+            background: #d4edda;
+            color: #155724;
+            border: 2px solid #c3e6cb;
+        }
+
+        .compatible {
+            background: #fff3cd;
+            color: #856404;
+            border: 2px solid #ffeaa7;
+        }
+
+        .improvised {
+            background: #f8d7da;
+            color: #721c24;
+            border: 2px solid #f5c6cb;
+        }
+
+        .calculation-steps {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border-left: 4px solid #667eea;
+        }
+
+        .calculation-steps h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .step {
+            padding: 10px;
+            margin: 10px 0;
+            background: white;
+            border-radius: 6px;
+            border-left: 3px solid #28a745;
+        }
+
+        .step.penalty {
+            border-left-color: #dc3545;
+        }
+
+        .step-number {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            width: 25px;
+            height: 25px;
+            text-align: center;
+            line-height: 25px;
+            border-radius: 50%;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+
+        .damage-display {
+            text-align: center;
+            padding: 30px;
+            margin: 20px 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px;
+        }
+
+        .damage-display h3 {
+            font-size: 1.5em;
+            margin-bottom: 15px;
+        }
+
+        .damage-value {
+            font-size: 3em;
+            font-weight: bold;
+            margin: 15px 0;
+        }
+
+        .damage-variants {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .variant-card {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 15px;
+            border-radius: 8px;
+            backdrop-filter: blur(10px);
+        }
+
+        .variant-card h4 {
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .variant-card .value {
+            font-size: 1.8em;
+            font-weight: bold;
+        }
+
+        .stat-modifier {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .stat-modifier input {
+            width: 80px;
+            padding: 8px;
+            text-align: center;
+            font-size: 16px;
+            border: 2px solid white;
+            border-radius: 6px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚔️ Système d'Armes TTRPG</h1>
+            <p>Calculateur de dégâts basé sur les dés</p>
+        </div>
+
+        <div class="input-section">
+            <div class="input-group">
+                <label for="weaponsInput">Weapons.txt (Format: [Name];[Type];[Material];[Reinforcement];[Length];[Weight];[BaseDamage])</label>
+                <textarea id="weaponsInput" placeholder="Épée Longue;ET;M;E;L;M;2d8+1/Dague Courte;D;M;N;S;L;1d6/..."></textarea>
+            </div>
+
+            <div class="input-group">
+                <label for="attacksInput">Attacks.txt (Format: [Name];[Perfect weapons];[Compatible weapons];[Optimal Size];[Optimal Weight])</label>
+                <textarea id="attacksInput" placeholder="Frappe Puissante;EE,ET;D;L;M/Estoc Rapide;EE,ET;D;L;M/..."></textarea>
+            </div>
+
+            <button class="btn" onclick="loadData()">Charger les données</button>
+        </div>
+
+        <div class="selection-section">
+            <div class="select-group">
+                <h3>Choisir un personnage</h3>
+                <select id="characterSelect" onchange="updateCharacterDetails()">
+                    <option value="">-- Sélectionner --</option>
+                </select>
+                <div id="characterDetails" class="weapon-details" style="display:none;"></div>
+            </div>
+
+            <div class="select-group">
+                <h3>Choisir une arme</h3>
+                <select id="weaponSelect" onchange="updateWeaponDetails()">
+                    <option value="">-- Sélectionner --</option>
+                </select>
+                <div id="weaponDetails" class="weapon-details" style="display:none;"></div>
+            </div>
+
+            <div class="select-group">
+                <h3>Choisir une attaque</h3>
+                <select id="attackSelect" onchange="updateAttackDetails()">
+                    <option value="">-- Sélectionner --</option>
+                </select>
+                <div id="attackDetails" class="attack-details" style="display:none;"></div>
+            </div>
+        </div>
+
+        <div class="results-section">
+            <h2>📊 Calcul des Dégâts</h2>
+            <div id="resultsBox" class="compatibility-box">
+                <p style="text-align:center; color:#999;">Sélectionnez une arme et une attaque pour voir les résultats</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let weapons = [];
+        let attacks = [];
+        let characters = [];
+        let selectedCharacter = null;
+
+        const sizeOrder = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
+        const weightOrder = ['XL', 'L', 'M', 'H', 'XH', 'XXH'];
+
+        function loadCharacters() {
+            fetch('characters.json')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('characters.json not found');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    characters = data;
+                    updateCharacterDropdown();
+                    console.log('Characters loaded from file:', characters.length);
+                })
+                .catch(error => {
+                    console.log('No characters.json found, trying localStorage');
+                    // Fallback to localStorage
+                    const saved = localStorage.getItem('ttrpg_characters');
+                    if (saved) {
+                        try {
+                            characters = JSON.parse(saved);
+                            updateCharacterDropdown();
+                            console.log('Characters loaded from localStorage:', characters.length);
+                        } catch (error) {
+                            console.error('Error loading characters:', error);
+                            characters = [];
+                        }
+                    } else {
+                        console.log('No characters found');
+                        characters = [];
+                    }
+                });
+        }
+
+        function updateCharacterDropdown() {
+            const characterSelect = document.getElementById('characterSelect');
+            characterSelect.innerHTML = '<option value="">-- Sélectionner --</option>';
+
+            characters.forEach((char, i) => {
+                characterSelect.innerHTML += `<option value="${i}">${char.charName} (${char.class})</option>`;
+            });
+        }
+
+        function updateCharacterDetails() {
+            const index = document.getElementById('characterSelect').value;
+            const detailsDiv = document.getElementById('characterDetails');
+
+            if (index === '') {
+                detailsDiv.style.display = 'none';
+                selectedCharacter = null;
+                document.getElementById('statMod').value = 0;
+                return;
+            }
+
+            selectedCharacter = characters[index];
+            detailsDiv.style.display = 'block';
+            detailsDiv.innerHTML = `
+                <p><strong>Nom:</strong> ${selectedCharacter.charName}</p>
+                <p><strong>Joueur:</strong> ${selectedCharacter.realName}</p>
+                <p><strong>Classe:</strong> ${selectedCharacter.class}</p>
+                <p><strong>Espèce:</strong> ${selectedCharacter.species}</p>
+                <p><strong>STR:</strong> ${selectedCharacter.stats.STR.current}/${selectedCharacter.stats.STR.max}</p>
+                <p><strong>DEX:</strong> ${selectedCharacter.stats.DEX.current}/${selectedCharacter.stats.DEX.max}</p>
+            `;
+
+            // Auto-fill STR modifier
+            const strMod = Math.floor((selectedCharacter.stats.STR.current - 10) / 2);
+            document.getElementById('statMod').value = strMod;
+            
+            updateVariants();
+        }
+
+        function parseDamage(damageStr) {
+            // Parse strings like "2d10+1" or "1d6" or "3d8-2"
+            const match = damageStr.match(/(\d+)d(\d+)([+-]\d+)?/);
+            if (!match) return { numDice: 1, dieSize: 6, flatMod: 0 };
+            
+            return {
+                numDice: parseInt(match[1]),
+                dieSize: parseInt(match[2]),
+                flatMod: match[3] ? parseInt(match[3]) : 0
+            };
+        }
+
+        function formatDamage(numDice, dieSize, flatMod) {
+            if (numDice <= 0) return "1d" + dieSize + (flatMod !== 0 ? (flatMod > 0 ? "+" : "") + flatMod : "");
+            let str = numDice + "d" + dieSize;
+            if (flatMod !== 0) {
+                str += flatMod > 0 ? "+" + flatMod : flatMod;
+            }
+            return str;
+        }
+
+        function loadData() {
+            const weaponsText = document.getElementById('weaponsInput').value.trim();
+            const attacksText = document.getElementById('attacksInput').value.trim();
+
+            if (!weaponsText || !attacksText) {
+                alert('Veuillez remplir les deux champs de données');
+                return;
+            }
+
+            weapons = weaponsText.split('/').map(w => {
+                const parts = w.trim().split(';');
+                return {
+                    name: parts[0],
+                    type: parts[1],
+                    material: parts[2],
+                    reinforcement: parts[3],
+                    size: parts[4],
+                    weight: parts[5],
+                    baseDamage: parts[6] || "1d6"
+                };
+            }).filter(w => w.name);
+
+            attacks = attacksText.split('/').map(a => {
+                const parts = a.trim().split(';');
+                return {
+                    name: parts[0],
+                    perfectWeapons: parts[1] ? parts[1].split(',').map(w => w.trim()) : [],
+                    compatibleWeapons: parts[2] ? parts[2].split(',').map(w => w.trim()) : [],
+                    optimalSize: parts[3],
+                    optimalWeight: parts[4]
+                };
+            }).filter(a => a.name);
+
+            const weaponSelect = document.getElementById('weaponSelect');
+            const attackSelect = document.getElementById('attackSelect');
+
+            weaponSelect.innerHTML = '<option value="">-- Sélectionner --</option>';
+            attackSelect.innerHTML = '<option value="">-- Sélectionner --</option>';
+
+            weapons.forEach((w, i) => {
+                weaponSelect.innerHTML += `<option value="${i}">${w.name}</option>`;
+            });
+
+            attacks.forEach((a, i) => {
+                attackSelect.innerHTML += `<option value="${i}">${a.name}</option>`;
+            });
+
+            alert('Données chargées avec succès!');
+        }
+
+        function updateWeaponDetails() {
+            const index = document.getElementById('weaponSelect').value;
+            const detailsDiv = document.getElementById('weaponDetails');
+
+            if (index === '') {
+                detailsDiv.style.display = 'none';
+                return;
+            }
+
+            const weapon = weapons[index];
+            detailsDiv.style.display = 'block';
+            detailsDiv.innerHTML = `
+                <p><strong>Type:</strong> ${weapon.type}</p>
+                <p><strong>Matériau:</strong> ${weapon.material}</p>
+                <p><strong>Renforcement:</strong> ${weapon.reinforcement}</p>
+                <p><strong>Taille:</strong> ${weapon.size}</p>
+                <p><strong>Poids:</strong> ${weapon.weight}</p>
+                <p><strong>Dégâts de base:</strong> ${weapon.baseDamage}</p>
+            `;
+
+            calculateDamage();
+        }
+
+        function updateAttackDetails() {
+            const index = document.getElementById('attackSelect').value;
+            const detailsDiv = document.getElementById('attackDetails');
+
+            if (index === '') {
+                detailsDiv.style.display = 'none';
+                return;
+            }
+
+            const attack = attacks[index];
+            detailsDiv.style.display = 'block';
+            detailsDiv.innerHTML = `
+                <p><strong>Armes parfaites:</strong> ${attack.perfectWeapons.join(', ') || 'Aucune'}</p>
+                <p><strong>Armes compatibles:</strong> ${attack.compatibleWeapons.join(', ') || 'Aucune'}</p>
+                <p><strong>Taille optimale:</strong> ${attack.optimalSize}</p>
+                <p><strong>Poids optimal:</strong> ${attack.optimalWeight}</p>
+            `;
+
+            calculateDamage();
+        }
+
+        function calculateDamage() {
+            const weaponIndex = document.getElementById('weaponSelect').value;
+            const attackIndex = document.getElementById('attackSelect').value;
+            const resultsBox = document.getElementById('resultsBox');
+
+            if (weaponIndex === '' || attackIndex === '') {
+                resultsBox.innerHTML = '<p style="text-align:center; color:#999;">Sélectionnez une arme et une attaque pour voir les résultats</p>';
+                return;
+            }
+
+            const weapon = weapons[weaponIndex];
+            const attack = attacks[attackIndex];
+
+            let steps = [];
+            
+            // Step 1: Base damage
+            let damage = parseDamage(weapon.baseDamage);
+            steps.push({
+                step: 1,
+                title: "Dégâts de base",
+                description: `Arme: ${weapon.name}`,
+                value: formatDamage(damage.numDice, damage.dieSize, damage.flatMod),
+                penalty: false
+            });
+
+            // Step 2: Weapon compatibility
+            let compatibilityTier = 'improvised';
+            if (attack.perfectWeapons.includes(weapon.type)) {
+                compatibilityTier = 'perfect';
+                damage.numDice += 1;
+                steps.push({
+                    step: 2,
+                    title: "Arme Parfaite",
+                    description: "+1 dé de dégâts",
+                    value: formatDamage(damage.numDice, damage.dieSize, damage.flatMod),
+                    penalty: false
+                });
+            } else if (attack.compatibleWeapons.includes(weapon.type)) {
+                compatibilityTier = 'compatible';
+                steps.push({
+                    step: 2,
+                    title: "Arme Compatible",
+                    description: "Aucun changement",
+                    value: formatDamage(damage.numDice, damage.dieSize, damage.flatMod),
+                    penalty: false
+                });
+            } else {
+                damage.numDice = Math.max(1, damage.numDice - 1);
+                steps.push({
+                    step: 2,
+                    title: "Arme Improvisée",
+                    description: "-1 dé de dégâts (minimum 1)",
+                    value: formatDamage(damage.numDice, damage.dieSize, damage.flatMod),
+                    penalty: true
+                });
+            }
+
+            // Step 3: Size penalty
+            const weaponSizeIndex = sizeOrder.indexOf(weapon.size);
+            const optimalSizeIndex = sizeOrder.indexOf(attack.optimalSize);
+            const sizeDiff = Math.abs(weaponSizeIndex - optimalSizeIndex);
+            
+            let sizeHalve = false;
+            if (sizeDiff === 1) {
+                damage.flatMod -= 1;
+                steps.push({
+                    step: 3,
+                    title: "Pénalité de Taille",
+                    description: `1 palier de différence: -1 dégât fixe`,
+                    value: formatDamage(damage.numDice, damage.dieSize, damage.flatMod),
+                    penalty: true
+                });
+            } else if (sizeDiff === 2) {
+                damage.numDice = Math.max(1, damage.numDice - 1);
+                steps.push({
+                    step: 3,
+                    title: "Pénalité de Taille",
+                    description: `2 paliers de différence: -1 dé`,
+                    value: formatDamage(damage.numDice, damage.dieSize, damage.flatMod),
+                    penalty: true
+                });
+            } else if (sizeDiff >= 3) {
+                sizeHalve = true;
+                steps.push({
+                    step: 3,
+                    title: "Pénalité de Taille",
+                    description: `${sizeDiff} paliers de différence: dégâts divisés par 2 (après jet)`,
+                    value: formatDamage(damage.numDice, damage.dieSize, damage.flatMod) + " ÷ 2",
+                    penalty: true
+                });
+            } else {
+                steps.push({
+                    step: 3,
+                    title: "Taille Optimale",
+                    description: "Aucune pénalité",
+                    value: formatDamage(damage.numDice, damage.dieSize, damage.flatMod),
+                    penalty: false
+                });
+            }
+
+            // Step 4: Weight penalty
+            const weaponWeightIndex = weightOrder.indexOf(weapon.weight);
+            const optimalWeightIndex = weightOrder.indexOf(attack.optimalWeight);
+            const weightDiff = Math.abs(weaponWeightIndex - optimalWeightIndex);
+            
+            let weightPenaltyHit = false;
+            if (weightDiff === 1) {
+                damage.flatMod -= 1;
+                steps.push({
+                    step: 4,
+                    title: "Pénalité de Poids",
+                    description: `1 palier de différence: -1 dégât fixe`,
+                    value: formatDamage(damage.numDice, damage.dieSize, damage.flatMod),
+                    penalty: true
+                });
+            } else if (weightDiff === 2) {
+                damage.numDice = Math.max(1, damage.numDice - 1);
+                steps.push({
+                    step: 4,
+                    title: "Pénalité de Poids",
+                    description: `2 paliers de différence: -1 dé`,
+                    value: formatDamage(damage.numDice, damage.dieSize, damage.flatMod),
+                    penalty: true
+                });
+            } else if (weightDiff >= 3) {
+                damage.numDice = Math.max(1, damage.numDice - 2);
+                weightPenaltyHit = true;
+                steps.push({
+                    step: 4,
+                    title: "Pénalité de Poids Sévère",
+                    description: `${weightDiff} paliers de différence: -2 dés et -1 au toucher`,
+                    value: formatDamage(damage.numDice, damage.dieSize, damage.flatMod) + " (et -1 toucher)",
+                    penalty: true
+                });
+            } else {
+                steps.push({
+                    step: 4,
+                    title: "Poids Optimal",
+                    description: "Aucune pénalité",
+                    value: formatDamage(damage.numDice, damage.dieSize, damage.flatMod),
+                    penalty: false
+                });
+            }
+
+            // Display results
+            let statusClass = compatibilityTier;
+            let statusText = '';
+            
+            if (compatibilityTier === 'perfect') {
+                statusText = '⭐ ARME PARFAITE';
+            } else if (compatibilityTier === 'compatible') {
+                statusText = '✓ ARME COMPATIBLE';
+            } else {
+                statusText = '⚠ ARME IMPROVISÉE';
+            }
+
+            const finalDamageStr = formatDamage(damage.numDice, damage.dieSize, damage.flatMod);
+            const finalWithStat = formatDamage(damage.numDice, damage.dieSize, damage.flatMod) + " + STAT";
+
+            let stepsHTML = steps.map(s => `
+                <div class="step ${s.penalty ? 'penalty' : ''}">
+                    <span class="step-number">${s.step}</span>
+                    <strong>${s.title}:</strong> ${s.description}<br>
+                    <span style="margin-left: 35px; color: #667eea; font-weight: bold;">→ ${s.value}</span>
+                </div>
+            `).join('');
+
+            resultsBox.innerHTML = `
+                <div class="compatibility-status ${statusClass}">
+                    ${statusText}
+                </div>
+
+                <div class="calculation-steps">
+                    <h3>📋 Étapes de Calcul</h3>
+                    ${stepsHTML}
+                </div>
+
+                <div class="damage-display">
+                    <h3>Dégâts Finaux</h3>
+                    <div class="damage-value">${finalWithStat}</div>
+                    ${sizeHalve ? '<p style="font-size: 1.2em; margin-top: 10px;">⚠️ Divisez le résultat par 2 après le jet</p>' : ''}
+                    ${weightPenaltyHit ? '<p style="font-size: 1.2em; margin-top: 10px;">⚠️ -1 au jet d\'attaque</p>' : ''}
+                    
+                    <div class="stat-modifier">
+                        <label style="margin-right: 10px;">Modificateur de STAT (STR):</label>
+                        <input type="number" id="statMod" value="0" onchange="updateVariants()" style="width: 80px;">
+                        <button onclick="useDEX()" style="margin-left: 10px; padding: 5px 10px; background: rgba(255,255,255,0.3); border: 1px solid white; color: white; border-radius: 4px; cursor: pointer;">Utiliser DEX</button>
+                    </div>
+
+                    <div class="damage-variants">
+                        <div class="variant-card">
+                            <h4>NORMAL</h4>
+                            <div class="value" id="normalDamage">${finalWithStat}</div>
+                        </div>
+                        <div class="variant-card">
+                            <h4>GRAZE</h4>
+                            <div class="value" id="grazeDamage">⌊(${finalWithStat}) / 2⌋</div>
+                        </div>
+                        <div class="variant-card">
+                            <h4>CRIT</h4>
+                            <div class="value" id="critDamage">(${finalWithStat}) × 2</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Store current damage for variant calculations
+            window.currentDamage = {
+                numDice: damage.numDice,
+                dieSize: damage.dieSize,
+                flatMod: damage.flatMod,
+                sizeHalve: sizeHalve
+            };
+
+            updateVariants();
+        }
+
+        function calculateDiceAverage(numDice, dieSize) {
+            // Average of a die is (max + min) / 2 = (dieSize + 1) / 2
+            return numDice * (dieSize + 1) / 2;
+        }
+
+        function useDEX() {
+            if (!selectedCharacter) {
+                alert('Veuillez d\'abord sélectionner un personnage');
+                return;
+            }
+            const dexMod = Math.floor((selectedCharacter.stats.DEX.current - 10) / 2);
+            document.getElementById('statMod').value = dexMod;
+            updateVariants();
+        }
+
+        function updateVariants() {
+            if (!window.currentDamage) return;
+
+            const statMod = parseInt(document.getElementById('statMod').value) || 0;
+            const d = window.currentDamage;
+            
+            // Calculate average damage from dice
+            let avgDice = calculateDiceAverage(d.numDice, d.dieSize);
+            let totalFlat = d.flatMod + statMod;
+            
+            // Normal damage
+            let normalDmg = avgDice + totalFlat;
+            if (d.sizeHalve) {
+                normalDmg = normalDmg / 2;
+            }
+            
+            // Graze damage (half of normal, floored)
+            let grazeDmg = Math.floor(normalDmg / 2);
+            
+            // Crit damage (double normal)
+            let critDmg = normalDmg * 2;
+            
+            const baseDmg = formatDamage(d.numDice, d.dieSize, d.flatMod + statMod);
+            
+            document.getElementById('normalDamage').innerHTML = `
+                ${baseDmg}${d.sizeHalve ? " ÷ 2" : ""}<br>
+                <span style="font-size: 0.7em; opacity: 0.9;">(Moyenne: ${normalDmg.toFixed(1)})</span>
+            `;
+            
+            document.getElementById('grazeDamage').innerHTML = `
+                ⌊(${baseDmg}${d.sizeHalve ? " ÷ 2" : ""}) / 2⌋<br>
+                <span style="font-size: 0.7em; opacity: 0.9;">(Moyenne: ${grazeDmg.toFixed(1)})</span>
+            `;
+            
+            document.getElementById('critDamage').innerHTML = `
+                (${baseDmg}${d.sizeHalve ? " ÷ 2" : ""}) × 2<br>
+                <span style="font-size: 0.7em; opacity: 0.9;">(Moyenne: ${critDmg.toFixed(1)})</span>
+            `;
+        }
+
+        // Load characters on page load
+        window.addEventListener('DOMContentLoaded', loadCharacters);
+    </script>
+</body>
+</html>

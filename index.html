@@ -495,28 +495,41 @@
         }
 
         function initCharacters() {
-            const saved = localStorage.getItem('ttrpg_characters');
-            if (saved) {
-                characters = JSON.parse(saved);
-            } else {
-                characters = [{
-                    charName: 'Aragorn',
-                    realName: 'Player 1',
-                    species: 'Human',
-                    class: 'Ranger',
-                    stats: {
-                        STR: {current: 18, max: 20},
-                        DEF: {current: 15, max: 20},
-                        DEX: {current: 16, max: 20},
-                        WIS: {current: 14, max: 20},
-                        INT: {current: 12, max: 20},
-                        HP: {current: 85, max: 100},
-                        AP: {current: 10, max: 15},
-                        AC: {current: 16, max: 20}
+            loadCharactersFromFile();
+        }
+
+        function loadCharactersFromFile() {
+            fetch('characters.json')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('characters.json not found');
                     }
-                }];
-            }
-            renderCharacters();
+                    return response.json();
+                })
+                .then(data => {
+                    characters = data;
+                    renderCharacters();
+                })
+                .catch(error => {
+                    console.log('No saved characters file found, starting fresh');
+                    characters = [{
+                        charName: 'Aragorn',
+                        realName: 'Player 1',
+                        species: 'Human',
+                        class: 'Ranger',
+                        stats: {
+                            STR: {current: 18, max: 20},
+                            DEF: {current: 15, max: 20},
+                            DEX: {current: 16, max: 20},
+                            WIS: {current: 14, max: 20},
+                            INT: {current: 12, max: 20},
+                            HP: {current: 85, max: 100},
+                            AP: {current: 10, max: 15},
+                            AC: {current: 16, max: 20}
+                        }
+                    }];
+                    renderCharacters();
+                });
         }
 
         function renderCharacters() {
@@ -643,7 +656,21 @@
         }
 
         function saveCharacters() {
-            localStorage.setItem('ttrpg_characters', JSON.stringify(characters));
+            // Create a download link for the JSON file
+            const dataStr = JSON.stringify(characters, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'characters.json';
+            link.click();
+            
+            URL.revokeObjectURL(url);
+        }
+
+        function autoSaveNotification() {
+            alert('Changes saved! Click OK to download the updated characters.json file. Place it in the same folder as this HTML file.');
         }
 
         function openExportModal() {
